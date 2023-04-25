@@ -6,17 +6,18 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
 import Cool exposing (alert)
+import Http
 
 type Msg = Alert String
 
-update : Msg -> () -> ( (), Cmd Msg )
-update msg () =
+update : Msg -> Int -> ( Int, Cmd Msg )
+update msg i =
     case msg of
         Alert message ->
-            ((), alert message)
+            (i + 1, alert message)
 
-view : () -> Html Msg
-view () =
+view : Int -> Html Msg
+view i =
     div [ class "jumbotron" ]
         [ h1 [] [ text "Welcome Ash Ketchum!" ]
         , p [ onClick (Alert "Cool" )]
@@ -24,16 +25,16 @@ view () =
                 """ 
                 You and Pikachu finally made it! 🥇
                 """
-            , text (String.fromInt (1 + 2))
+            , text (String.fromInt (1 + i))
             ]
         ]
 
 
-main : Program () () Msg
+main : Program () Int Msg
 main =
     Browser.element
         { view = view
-        , init = \() -> ((), Cmd.none)
+        , init = \() -> (0, Cmd.none)
         , update = update
         , subscriptions = (\model -> Sub.none)
         }

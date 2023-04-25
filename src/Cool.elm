@@ -1,19 +1,17 @@
-module Cool exposing (alert)
+effect module Cool where { command = MyCmd } exposing (alert)
 
-import AshCoreMod.Cool
+import Basics
+import Task exposing (Task)
+import AshCoreMod.AshCoreModCool
 
+type alias State = ()
 
+init : Task Never State
+init =
+  Task.succeed ()
 
+type MyCmd = Alert String
 
-
-
-
-
-
-
-
-
-
-alert : String -> Cmd a
+alert : String -> Cmd msg
 alert str =
-  AshCoreMod.Cool.alert str
+  command (Alert str)
