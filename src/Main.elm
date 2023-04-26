@@ -5,21 +5,37 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 
-import Cool exposing (alert)
-import Http
+import Fetch
 
-type Msg = Alert String
+getPublicOpinion : Cmd Msg
+getPublicOpinion =
+  Fetch.get
+    { url = "https://elm-lang.org/assets/public-opinion.txt"
+    , expect = Fetch.expectString GotText
+    }
 
-update : Msg -> Int -> ( Int, Cmd Msg )
-update msg i =
+type alias State = (Int, String)
+
+type Msg
+    = Alert String
+    | GotText (Result Fetch.Error String)
+
+update : Msg -> State -> ( State, Cmd Msg )
+update msg (i, txt) =
     case msg of
         Alert message ->
-            (i + 1, alert message)
+            ((i + 1, txt), getPublicOpinion)
 
-view : Int -> Html Msg
-view i =
+        GotText (Err err) ->
+            ((i, txt), Cmd.none)
+
+        GotText (Ok txt_) ->
+            ((i, txt_), Cmd.none)
+
+view : State -> Html Msg
+view (i, txt) =
     div [ class "jumbotron" ]
-        [ h1 [] [ text "Welcome Ash Ketchum!" ]
+        [ h1 [] [ text ( "Welcome Ash Ketchum!" ++ txt ) ]
         , p [ onClick (Alert "Cool" )]
             [ text <|
                 """ 
@@ -30,11 +46,11 @@ view i =
         ]
 
 
-main : Program () Int Msg
+main : Program () State Msg
 main =
     Browser.element
         { view = view
-        , init = \() -> (0, Cmd.none)
+        , init = \() -> ((0, ""), Cmd.none)
         , update = update
         , subscriptions = (\model -> Sub.none)
         }
