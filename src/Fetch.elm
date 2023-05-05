@@ -48,7 +48,7 @@ effect module Fetch where { command = MyCmd, subscription = MySub } exposing
 import Bytes exposing (Bytes)
 import Bytes.Decode as Bytes
 import Dict exposing (Dict)
-import AshCoreMod.AshCoreModFetch
+import Ash.Kernel.Fetch
 import File exposing (File)
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -223,7 +223,7 @@ and POST requests where you are not sending any data.
 -}
 emptyBody : Body
 emptyBody =
-  AshCoreMod.AshCoreModFetch.emptyBody
+  Ash.Kernel.Fetch.emptyBody
 
 
 {-| Put some JSON value in the body of your `Request`.
@@ -251,7 +251,7 @@ Maybe you want to search for 10 books relevant to a certain topic:
 -}
 jsonBody : Encode.Value -> Body
 jsonBody value =
-  AshCoreMod.AshCoreModFetch.pair "application/json" (Encode.encode 0 value)
+  Ash.Kernel.Fetch.pair "application/json" (Encode.encode 0 value)
 
 
 {-| Put some string in the body of your `Request`. Defining `jsonBody` looks
@@ -268,7 +268,7 @@ of the body. Some servers are strict about this!
 -}
 stringBody : String -> String -> Body
 stringBody =
-  AshCoreMod.AshCoreModFetch.pair
+  Ash.Kernel.Fetch.pair
 
 
 {-| Put some `Bytes` in the body of your `Request`. This allows you to use
@@ -290,7 +290,7 @@ or `image/jpeg` instead.
 -}
 bytesBody : String -> Bytes -> Body
 bytesBody =
-  AshCoreMod.AshCoreModFetch.pair
+  Ash.Kernel.Fetch.pair
 
 
 {-| Use a file as the body of your `Request`. When someone uploads an image
@@ -303,7 +303,7 @@ This will automatically set the `Content-Type` to the MIME type of the file.
 -}
 fileBody : File -> Body
 fileBody =
-  AshCoreMod.AshCoreModFetch.pair ""
+  Ash.Kernel.Fetch.pair ""
 
 
 
@@ -353,7 +353,7 @@ creating a body this way.
 -}
 multipartBody : List Part -> Body
 multipartBody parts =
-  AshCoreMod.AshCoreModFetch.pair "" (AshCoreMod.AshCoreModFetch.toFormData parts)
+  Ash.Kernel.Fetch.pair "" (Ash.Kernel.Fetch.toFormData parts)
 
 
 {-| One part of a `multipartBody`.
@@ -370,7 +370,7 @@ type Part = Part
 -}
 stringPart : String -> String -> Part
 stringPart =
-  AshCoreMod.AshCoreModFetch.pair
+  Ash.Kernel.Fetch.pair
 
 
 {-| A part that contains a file. You can use
@@ -387,7 +387,7 @@ browser. From there, you can send it along to a server like this:
 -}
 filePart : String -> File -> Part
 filePart =
-  AshCoreMod.AshCoreModFetch.pair
+  Ash.Kernel.Fetch.pair
 
 
 {-| A part that contains bytes, allowing you to use
@@ -404,7 +404,7 @@ how to interpret the bytes.
 -}
 bytesPart : String -> String -> Bytes -> Part
 bytesPart key mime bytes =
-  AshCoreMod.AshCoreModFetch.pair key (AshCoreMod.AshCoreModFetch.bytesToBlob mime bytes)
+  Ash.Kernel.Fetch.pair key (Ash.Kernel.Fetch.bytesToBlob mime bytes)
 
 
 
@@ -607,7 +607,7 @@ application!
 -}
 expectStringResponse : (Result x a -> msg) -> (Response String -> Result x a) -> Expect msg
 expectStringResponse toMsg toResult =
-  AshCoreMod.AshCoreModFetch.expect "" identity (toResult >> toMsg)
+  Ash.Kernel.Fetch.expect "" identity (toResult >> toMsg)
 
 
 {-| Expect a [`Response`](#Response) with a `Bytes` body.
@@ -617,7 +617,7 @@ more access to headers and more leeway in defining your own errors.
 -}
 expectBytesResponse : (Result x a -> msg) -> (Response Bytes -> Result x a) -> Expect msg
 expectBytesResponse toMsg toResult =
-  AshCoreMod.AshCoreModFetch.expect "arraybuffer" AshCoreMod.AshCoreModFetch.toDataView (toResult >> toMsg)
+  Ash.Kernel.Fetch.expect "arraybuffer" Ash.Kernel.Fetch.toDataView (toResult >> toMsg)
 
 
 {-| A `Response` can come back a couple different ways:
@@ -854,7 +854,7 @@ task
     }
   -> Task x a
 task r =
-  AshCoreMod.AshCoreModFetch.toTask () resultToTask
+  Ash.Kernel.Fetch.toTask () resultToTask
     { method = r.method
     , headers = r.headers
     , url = r.url
@@ -877,7 +877,7 @@ Similar to [`expectStringResponse`](#expectStringResponse).
 -}
 stringResolver : (Response String -> Result x a) -> Resolver x a
 stringResolver =
-  AshCoreMod.AshCoreModFetch.expect "" identity
+  Ash.Kernel.Fetch.expect "" identity
 
 
 {-| Turn a response with a `Bytes` body into a result.
@@ -885,7 +885,7 @@ Similar to [`expectBytesResponse`](#expectBytesResponse).
 -}
 bytesResolver : (Response Bytes -> Result x a) -> Resolver x a
 bytesResolver =
-  AshCoreMod.AshCoreModFetch.expect "arraybuffer" AshCoreMod.AshCoreModFetch.toDataView
+  Ash.Kernel.Fetch.expect "arraybuffer" Ash.Kernel.Fetch.toDataView
 
 
 {-| Just like [`riskyRequest`](#riskyRequest), but it creates a `Task`. **Use
@@ -901,7 +901,7 @@ riskyTask
     }
   -> Task x a
 riskyTask r =
-  AshCoreMod.AshCoreModFetch.toTask () resultToTask
+  Ash.Kernel.Fetch.toTask () resultToTask
     { method = r.method
     , headers = r.headers
     , url = r.url
@@ -950,7 +950,7 @@ cmdMap func cmd =
         , headers = r.headers
         , url = r.url
         , body = r.body
-        , expect = AshCoreMod.AshCoreModFetch.mapExpect func r.expect
+        , expect = Ash.Kernel.Fetch.mapExpect func r.expect
         , timeout = r.timeout
         , tracker = r.tracker
         , allowCookiesFromOtherDomains = r.allowCookiesFromOtherDomains
@@ -1013,7 +1013,7 @@ updateReqs router cmds reqs =
                 |> Task.andThen (\_ -> updateReqs router otherCmds (Dict.remove tracker reqs))
 
         Request req ->
-          Process.spawn (AshCoreMod.AshCoreModFetch.toTask router (Platform.sendToApp router) req)
+          Process.spawn (Ash.Kernel.Fetch.toTask router (Platform.sendToApp router) req)
             |> Task.andThen (\pid ->
                   case req.tracker of
                     Nothing ->

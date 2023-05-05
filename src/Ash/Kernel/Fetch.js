@@ -13,7 +13,7 @@ import Result exposing (map, isOk)
 
 // SEND REQUEST
 
-var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
+var _Fetch_toTask = F3(function(router, toTask, request)
 {
   return __Scheduler_binding(function(callback)
   {
@@ -25,8 +25,8 @@ var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('error', function() { done(__Fetch_NetworkError_); });
     xhr.addEventListener('timeout', function() { done(__Fetch_Timeout_); });
-    xhr.addEventListener('load', function() { done(_AshCoreModFetch_toResponse(request.__$expect.__toBody, xhr)); });
-    __Maybe_isJust(request.__$tracker) && _AshCoreModFetch_track(router, xhr, request.__$tracker.a);
+    xhr.addEventListener('load', function() { done(_Fetch_toResponse(request.__$expect.__toBody, xhr)); });
+    __Maybe_isJust(request.__$tracker) && _Fetch_track(router, xhr, request.__$tracker.a);
 
     try {
       xhr.open(request.__$method, request.__$url, true);
@@ -34,7 +34,7 @@ var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
       return done(__Fetch_BadUrl_(request.__$url));
     }
 
-    _AshCoreModFetch_configureRequest(xhr, request);
+    _Fetch_configureRequest(xhr, request);
 
     request.__$body.a && xhr.setRequestHeader('Content-Type', request.__$body.a);
     xhr.send(request.__$body.b);
@@ -46,7 +46,7 @@ var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
 
 // CONFIGURE
 
-function _AshCoreModFetch_configureRequest(xhr, request)
+function _Fetch_configureRequest(xhr, request)
 {
   for (var headers = request.__$headers; headers.b; headers = headers.b) // WHILE_CONS
   {
@@ -60,11 +60,11 @@ function _AshCoreModFetch_configureRequest(xhr, request)
 
 // RESPONSES
 
-function _AshCoreModFetch_toResponse(toBody, xhr)
+function _Fetch_toResponse(toBody, xhr)
 {
   return A2(
     200 <= xhr.status && xhr.status < 300 ? __Fetch_GoodStatus_ : __Fetch_BadStatus_,
-    _AshCoreModFetch_toMetadata(xhr),
+    _Fetch_toMetadata(xhr),
     toBody(xhr.response)
   );
 }
@@ -72,20 +72,20 @@ function _AshCoreModFetch_toResponse(toBody, xhr)
 
 // METADATA
 
-function _AshCoreModFetch_toMetadata(xhr)
+function _Fetch_toMetadata(xhr)
 {
   return {
     __$url: xhr.responseURL,
     __$statusCode: xhr.status,
     __$statusText: xhr.statusText,
-    __$headers: _AshCoreModFetch_parseHeaders(xhr.getAllResponseHeaders())
+    __$headers: _Fetch_parseHeaders(xhr.getAllResponseHeaders())
   };
 }
 
 
 // HEADERS
 
-function _AshCoreModFetch_parseHeaders(rawHeaders)
+function _Fetch_parseHeaders(rawHeaders)
 {
   if (!rawHeaders)
   {
@@ -117,7 +117,7 @@ function _AshCoreModFetch_parseHeaders(rawHeaders)
 
 // EXPECT
 
-var _AshCoreModFetch_expect = F3(function(type, toBody, toValue)
+var _Fetch_expect = F3(function(type, toBody, toValue)
 {
   return {
     $: 0,
@@ -127,7 +127,7 @@ var _AshCoreModFetch_expect = F3(function(type, toBody, toValue)
   };
 });
 
-var _AshCoreModFetch_mapExpect = F2(function(func, expect)
+var _Fetch_mapExpect = F2(function(func, expect)
 {
   return {
     $: 0,
@@ -137,7 +137,7 @@ var _AshCoreModFetch_mapExpect = F2(function(func, expect)
   };
 });
 
-function _AshCoreModFetch_toDataView(arrayBuffer)
+function _Fetch_toDataView(arrayBuffer)
 {
   return new DataView(arrayBuffer);
 }
@@ -145,10 +145,10 @@ function _AshCoreModFetch_toDataView(arrayBuffer)
 
 // BODY and PARTS
 
-var _AshCoreModFetch_emptyBody = { $: 0 };
-var _AshCoreModFetch_pair = F2(function(a, b) { return { $: 0, a: a, b: b }; });
+var _Fetch_emptyBody = { $: 0 };
+var _Fetch_pair = F2(function(a, b) { return { $: 0, a: a, b: b }; });
 
-function _AshCoreModFetch_toFormData(parts)
+function _Fetch_toFormData(parts)
 {
   for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
   {
@@ -158,7 +158,7 @@ function _AshCoreModFetch_toFormData(parts)
   return formData;
 }
 
-var _AshCoreModFetch_bytesToBlob = F2(function(mime, bytes)
+var _Fetch_bytesToBlob = F2(function(mime, bytes)
 {
   return new Blob([bytes], { type: mime });
 });
@@ -166,7 +166,7 @@ var _AshCoreModFetch_bytesToBlob = F2(function(mime, bytes)
 
 // PROGRESS
 
-function _AshCoreModFetch_track(router, xhr, tracker)
+function _Fetch_track(router, xhr, tracker)
 {
   // TODO check out lengthComputable on loadstart event
 

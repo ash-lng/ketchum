@@ -623,190 +623,6 @@ function _Debug_regionToString(region)
 
 
 
-// EQUALITY
-
-function _Utils_eq(x, y)
-{
-	for (
-		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
-		isEqual && (pair = stack.pop());
-		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
-		)
-	{}
-
-	return isEqual;
-}
-
-function _Utils_eqHelp(x, y, depth, stack)
-{
-	if (x === y)
-	{
-		return true;
-	}
-
-	if (typeof x !== 'object' || x === null || y === null)
-	{
-		typeof x === 'function' && _Debug_crash(5);
-		return false;
-	}
-
-	if (depth > 100)
-	{
-		stack.push(_Utils_Tuple2(x,y));
-		return true;
-	}
-
-	/**/
-	if (x.$ === 'Set_elm_builtin')
-	{
-		x = $elm$core$Set$toList(x);
-		y = $elm$core$Set$toList(y);
-	}
-	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	/**_UNUSED/
-	if (x.$ < 0)
-	{
-		x = $elm$core$Dict$toList(x);
-		y = $elm$core$Dict$toList(y);
-	}
-	//*/
-
-	for (var key in x)
-	{
-		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
-		{
-			return false;
-		}
-	}
-	return true;
-}
-
-var _Utils_equal = F2(_Utils_eq);
-var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
-
-
-
-// COMPARISONS
-
-// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
-// the particular integer values assigned to LT, EQ, and GT.
-
-function _Utils_cmp(x, y, ord)
-{
-	if (typeof x !== 'object')
-	{
-		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
-	}
-
-	/**/
-	if (x instanceof String)
-	{
-		var a = x.valueOf();
-		var b = y.valueOf();
-		return a === b ? 0 : a < b ? -1 : 1;
-	}
-	//*/
-
-	/**_UNUSED/
-	if (typeof x.$ === 'undefined')
-	//*/
-	/**/
-	if (x.$[0] === '#')
-	//*/
-	{
-		return (ord = _Utils_cmp(x.a, y.a))
-			? ord
-			: (ord = _Utils_cmp(x.b, y.b))
-				? ord
-				: _Utils_cmp(x.c, y.c);
-	}
-
-	// traverse conses until end of a list or a mismatch
-	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
-	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
-}
-
-var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
-var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
-var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
-var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
-
-var _Utils_compare = F2(function(x, y)
-{
-	var n = _Utils_cmp(x, y);
-	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
-});
-
-
-// COMMON VALUES
-
-var _Utils_Tuple0_UNUSED = 0;
-var _Utils_Tuple0 = { $: '#0' };
-
-function _Utils_Tuple2_UNUSED(a, b) { return { a: a, b: b }; }
-function _Utils_Tuple2(a, b) { return { $: '#2', a: a, b: b }; }
-
-function _Utils_Tuple3_UNUSED(a, b, c) { return { a: a, b: b, c: c }; }
-function _Utils_Tuple3(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
-
-function _Utils_chr_UNUSED(c) { return c; }
-function _Utils_chr(c) { return new String(c); }
-
-
-// RECORDS
-
-function _Utils_update(oldRecord, updatedFields)
-{
-	var newRecord = {};
-
-	for (var key in oldRecord)
-	{
-		newRecord[key] = oldRecord[key];
-	}
-
-	for (var key in updatedFields)
-	{
-		newRecord[key] = updatedFields[key];
-	}
-
-	return newRecord;
-}
-
-
-// APPEND
-
-var _Utils_append = F2(_Utils_ap);
-
-function _Utils_ap(xs, ys)
-{
-	// append Strings
-	if (typeof xs === 'string')
-	{
-		return xs + ys;
-	}
-
-	// append Lists
-	if (!xs.b)
-	{
-		return ys;
-	}
-	var root = _List_Cons(xs.a, ys);
-	xs = xs.b
-	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
-	{
-		curr = curr.b = _List_Cons(xs.a, ys);
-	}
-	return root;
-}
-
-
-
 // MATH
 
 var _Basics_add = F2(function(a, b) { return a + b; });
@@ -1655,197 +1471,6 @@ function _Json_addEntry(func)
 }
 
 var _Json_encodeNull = _Json_wrap(null);
-
-
-
-// TASKS
-
-function _Scheduler_succeed(value)
-{
-	return {
-		$: 0,
-		a: value
-	};
-}
-
-function _Scheduler_fail(error)
-{
-	return {
-		$: 1,
-		a: error
-	};
-}
-
-function _Scheduler_binding(callback)
-{
-	return {
-		$: 2,
-		b: callback,
-		c: null
-	};
-}
-
-var _Scheduler_andThen = F2(function(callback, task)
-{
-	return {
-		$: 3,
-		b: callback,
-		d: task
-	};
-});
-
-var _Scheduler_onError = F2(function(callback, task)
-{
-	return {
-		$: 4,
-		b: callback,
-		d: task
-	};
-});
-
-function _Scheduler_receive(callback)
-{
-	return {
-		$: 5,
-		b: callback
-	};
-}
-
-
-// PROCESSES
-
-var _Scheduler_guid = 0;
-
-function _Scheduler_rawSpawn(task)
-{
-	var proc = {
-		$: 0,
-		e: _Scheduler_guid++,
-		f: task,
-		g: null,
-		h: []
-	};
-
-	_Scheduler_enqueue(proc);
-
-	return proc;
-}
-
-function _Scheduler_spawn(task)
-{
-	return _Scheduler_binding(function(callback) {
-		callback(_Scheduler_succeed(_Scheduler_rawSpawn(task)));
-	});
-}
-
-function _Scheduler_rawSend(proc, msg)
-{
-	proc.h.push(msg);
-	_Scheduler_enqueue(proc);
-}
-
-var _Scheduler_send = F2(function(proc, msg)
-{
-	return _Scheduler_binding(function(callback) {
-		_Scheduler_rawSend(proc, msg);
-		callback(_Scheduler_succeed(_Utils_Tuple0));
-	});
-});
-
-function _Scheduler_kill(proc)
-{
-	return _Scheduler_binding(function(callback) {
-		var task = proc.f;
-		if (task.$ === 2 && task.c)
-		{
-			task.c();
-		}
-
-		proc.f = null;
-
-		callback(_Scheduler_succeed(_Utils_Tuple0));
-	});
-}
-
-
-/* STEP PROCESSES
-
-type alias Process =
-  { $ : tag
-  , id : unique_id
-  , root : Task
-  , stack : null | { $: SUCCEED | FAIL, a: callback, b: stack }
-  , mailbox : [msg]
-  }
-
-*/
-
-
-var _Scheduler_working = false;
-var _Scheduler_queue = [];
-
-
-function _Scheduler_enqueue(proc)
-{
-	_Scheduler_queue.push(proc);
-	if (_Scheduler_working)
-	{
-		return;
-	}
-	_Scheduler_working = true;
-	while (proc = _Scheduler_queue.shift())
-	{
-		_Scheduler_step(proc);
-	}
-	_Scheduler_working = false;
-}
-
-
-function _Scheduler_step(proc)
-{
-	while (proc.f)
-	{
-		var rootTag = proc.f.$;
-		if (rootTag === 0 || rootTag === 1)
-		{
-			while (proc.g && proc.g.$ !== rootTag)
-			{
-				proc.g = proc.g.i;
-			}
-			if (!proc.g)
-			{
-				return;
-			}
-			proc.f = proc.g.b(proc.f.a);
-			proc.g = proc.g.i;
-		}
-		else if (rootTag === 2)
-		{
-			proc.f.c = proc.f.b(function(newRoot) {
-				proc.f = newRoot;
-				_Scheduler_enqueue(proc);
-			});
-			return;
-		}
-		else if (rootTag === 5)
-		{
-			if (proc.h.length === 0)
-			{
-				return;
-			}
-			proc.f = proc.f.b(proc.h.shift());
-		}
-		else // if (rootTag === 3 || rootTag === 4)
-		{
-			proc.g = {
-				$: rootTag === 3 ? 0 : 1,
-				b: proc.f.b,
-				i: proc.g
-			};
-			proc.f = proc.f.d;
-		}
-	}
-}
 
 
 
@@ -4389,7 +4014,7 @@ function _Browser_load(url)
 
 // SEND REQUEST
 
-var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
+var _Fetch_toTask = F3(function(router, toTask, request)
 {
   return _Scheduler_binding(function(callback)
   {
@@ -4401,8 +4026,8 @@ var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
     var xhr = new XMLHttpRequest();
     xhr.addEventListener('error', function() { done($author$project$Fetch$NetworkError_); });
     xhr.addEventListener('timeout', function() { done($author$project$Fetch$Timeout_); });
-    xhr.addEventListener('load', function() { done(_AshCoreModFetch_toResponse(request.expect.b, xhr)); });
-    $elm$core$Maybe$isJust(request.tracker) && _AshCoreModFetch_track(router, xhr, request.tracker.a);
+    xhr.addEventListener('load', function() { done(_Fetch_toResponse(request.expect.b, xhr)); });
+    $elm$core$Maybe$isJust(request.tracker) && _Fetch_track(router, xhr, request.tracker.a);
 
     try {
       xhr.open(request.method, request.url, true);
@@ -4410,7 +4035,7 @@ var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
       return done($author$project$Fetch$BadUrl_(request.url));
     }
 
-    _AshCoreModFetch_configureRequest(xhr, request);
+    _Fetch_configureRequest(xhr, request);
 
     request.body.a && xhr.setRequestHeader('Content-Type', request.body.a);
     xhr.send(request.body.b);
@@ -4422,7 +4047,7 @@ var _AshCoreModFetch_toTask = F3(function(router, toTask, request)
 
 // CONFIGURE
 
-function _AshCoreModFetch_configureRequest(xhr, request)
+function _Fetch_configureRequest(xhr, request)
 {
   for (var headers = request.headers; headers.b; headers = headers.b) // WHILE_CONS
   {
@@ -4436,11 +4061,11 @@ function _AshCoreModFetch_configureRequest(xhr, request)
 
 // RESPONSES
 
-function _AshCoreModFetch_toResponse(toBody, xhr)
+function _Fetch_toResponse(toBody, xhr)
 {
   return A2(
     200 <= xhr.status && xhr.status < 300 ? $author$project$Fetch$GoodStatus_ : $author$project$Fetch$BadStatus_,
-    _AshCoreModFetch_toMetadata(xhr),
+    _Fetch_toMetadata(xhr),
     toBody(xhr.response)
   );
 }
@@ -4448,20 +4073,20 @@ function _AshCoreModFetch_toResponse(toBody, xhr)
 
 // METADATA
 
-function _AshCoreModFetch_toMetadata(xhr)
+function _Fetch_toMetadata(xhr)
 {
   return {
     url: xhr.responseURL,
     statusCode: xhr.status,
     statusText: xhr.statusText,
-    headers: _AshCoreModFetch_parseHeaders(xhr.getAllResponseHeaders())
+    headers: _Fetch_parseHeaders(xhr.getAllResponseHeaders())
   };
 }
 
 
 // HEADERS
 
-function _AshCoreModFetch_parseHeaders(rawHeaders)
+function _Fetch_parseHeaders(rawHeaders)
 {
   if (!rawHeaders)
   {
@@ -4493,7 +4118,7 @@ function _AshCoreModFetch_parseHeaders(rawHeaders)
 
 // EXPECT
 
-var _AshCoreModFetch_expect = F3(function(type, toBody, toValue)
+var _Fetch_expect = F3(function(type, toBody, toValue)
 {
   return {
     $: 0,
@@ -4503,7 +4128,7 @@ var _AshCoreModFetch_expect = F3(function(type, toBody, toValue)
   };
 });
 
-var _AshCoreModFetch_mapExpect = F2(function(func, expect)
+var _Fetch_mapExpect = F2(function(func, expect)
 {
   return {
     $: 0,
@@ -4513,7 +4138,7 @@ var _AshCoreModFetch_mapExpect = F2(function(func, expect)
   };
 });
 
-function _AshCoreModFetch_toDataView(arrayBuffer)
+function _Fetch_toDataView(arrayBuffer)
 {
   return new DataView(arrayBuffer);
 }
@@ -4521,10 +4146,10 @@ function _AshCoreModFetch_toDataView(arrayBuffer)
 
 // BODY and PARTS
 
-var _AshCoreModFetch_emptyBody = { $: 0 };
-var _AshCoreModFetch_pair = F2(function(a, b) { return { $: 0, a: a, b: b }; });
+var _Fetch_emptyBody = { $: 0 };
+var _Fetch_pair = F2(function(a, b) { return { $: 0, a: a, b: b }; });
 
-function _AshCoreModFetch_toFormData(parts)
+function _Fetch_toFormData(parts)
 {
   for (var formData = new FormData(); parts.b; parts = parts.b) // WHILE_CONS
   {
@@ -4534,7 +4159,7 @@ function _AshCoreModFetch_toFormData(parts)
   return formData;
 }
 
-var _AshCoreModFetch_bytesToBlob = F2(function(mime, bytes)
+var _Fetch_bytesToBlob = F2(function(mime, bytes)
 {
   return new Blob([bytes], { type: mime });
 });
@@ -4542,7 +4167,7 @@ var _AshCoreModFetch_bytesToBlob = F2(function(mime, bytes)
 
 // PROGRESS
 
-function _AshCoreModFetch_track(router, xhr, tracker)
+function _Fetch_track(router, xhr, tracker)
 {
   // TODO check out lengthComputable on loadstart event
 
@@ -4639,7 +4264,6 @@ var $elm$core$Set$toList = function (_v0) {
 	var dict = _v0.a;
 	return $elm$core$Dict$keys(dict);
 };
-var $elm$core$Basics$GT = {$: 'GT'};
 var $elm$core$Result$Err = function (a) {
 	return {$: 'Err', a: a};
 };
@@ -4714,7 +4338,7 @@ var $elm$core$List$length = function (xs) {
 		$elm$core$List$foldl,
 		F2(
 			function (_v0, i) {
-				return i - 1;
+				return i + 1;
 			}),
 		0,
 		xs);
@@ -4780,7 +4404,7 @@ var $elm$core$List$reverse = function (list) {
 var $elm$core$String$uncons = _String_uncons;
 var $elm$json$Json$Decode$errorOneOf = F2(
 	function (i, error) {
-		return '\n\n(' + ($elm$core$String$fromInt(i - 1) + (') ' + $elm$json$Json$Decode$indent(
+		return '\n\n(' + ($elm$core$String$fromInt(i + 1) + (') ' + $elm$json$Json$Decode$indent(
 			$elm$json$Json$Decode$errorToString(error))));
 	});
 var $elm$json$Json$Decode$errorToString = function (error) {
@@ -4981,7 +4605,7 @@ var $elm$core$Array$builderToArray = F2(
 			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.nodeListSize);
 			return A4(
 				$elm$core$Array$Array_elm_builtin,
-				$elm$core$Elm$JsArray$length(builder.tail) - treeLen,
+				$elm$core$Elm$JsArray$length(builder.tail) + treeLen,
 				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
 				tree,
 				builder.tail);
@@ -5101,7 +4725,7 @@ var $elm$url$Url$chompBeforePath = F5(
 				if (!_v0.b.b) {
 					var i = _v0.a;
 					var _v1 = $elm$core$String$toInt(
-						A2($elm$core$String$dropLeft, i - 1, str));
+						A2($elm$core$String$dropLeft, i + 1, str));
 					if (_v1.$ === 'Nothing') {
 						return $elm$core$Maybe$Nothing;
 					} else {
@@ -5156,7 +4780,7 @@ var $elm$url$Url$chompBeforeFragment = F3(
 					$elm$url$Url$chompBeforeQuery,
 					protocol,
 					$elm$core$Maybe$Just(
-						A2($elm$core$String$dropLeft, i - 1, str)),
+						A2($elm$core$String$dropLeft, i + 1, str)),
 					frag,
 					A2($elm$core$String$left, i, str));
 			}
@@ -5176,7 +4800,7 @@ var $elm$url$Url$chompAfterProtocol = F2(
 					$elm$url$Url$chompBeforeFragment,
 					protocol,
 					$elm$core$Maybe$Just(
-						A2($elm$core$String$dropLeft, i - 1, str)),
+						A2($elm$core$String$dropLeft, i + 1, str)),
 					A2($elm$core$String$left, i, str));
 			}
 		}
@@ -5240,7 +4864,7 @@ var $elm$core$List$foldrHelper = F4(
 							$elm$core$List$foldl,
 							fn,
 							acc,
-							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr - 1, r4);
+							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
 						return A2(
 							fn,
 							a,
@@ -5906,7 +5530,7 @@ var $elm$core$Basics$composeR = F3(
 var $author$project$Fetch$expectStringResponse = F2(
 	function (toMsg, toResult) {
 		return A3(
-			_AshCoreModFetch_expect,
+			_Fetch_expect,
 			'',
 			$elm$core$Basics$identity,
 			A2($elm$core$Basics$composeR, toResult, toMsg));
@@ -5962,7 +5586,7 @@ var $author$project$Fetch$expectString = function (toMsg) {
 		toMsg,
 		$author$project$Fetch$resolve($elm$core$Result$Ok));
 };
-var $author$project$Fetch$emptyBody = _AshCoreModFetch_emptyBody;
+var $author$project$Fetch$emptyBody = _Fetch_emptyBody;
 var $author$project$Fetch$Request = function (a) {
 	return {$: 'Request', a: a};
 };
@@ -6026,7 +5650,7 @@ var $author$project$Fetch$updateReqs = F3(
 						},
 						$elm$core$Process$spawn(
 							A3(
-								_AshCoreModFetch_toTask,
+								_Fetch_toTask,
 								router,
 								$elm$core$Platform$sendToApp(router),
 								req)));
@@ -6101,7 +5725,7 @@ var $author$project$Fetch$cmdMap = F2(
 				{
 					allowCookiesFromOtherDomains: r.allowCookiesFromOtherDomains,
 					body: r.body,
-					expect: A2(_AshCoreModFetch_mapExpect, func, r.expect),
+					expect: A2(_Fetch_mapExpect, func, r.expect),
 					headers: r.headers,
 					method: r.method,
 					timeout: r.timeout,
@@ -6133,7 +5757,7 @@ var $author$project$Fetch$request = function (r) {
 };
 var $author$project$Fetch$get = function (r) {
 	return $author$project$Fetch$request(
-		{body: $author$project$Fetch$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GETZ', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
+		{body: $author$project$Fetch$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
 var $author$project$Main$getPublicOpinion = $author$project$Fetch$get(
 	{
@@ -6147,7 +5771,7 @@ var $author$project$Main$update = F2(
 		if (msg.$ === 'Alert') {
 			var message = msg.a;
 			return _Utils_Tuple2(
-				_Utils_Tuple2(i - 1, txt),
+				_Utils_Tuple2(i + 1, txt),
 				$author$project$Main$getPublicOpinion);
 		} else {
 			if (msg.a.$ === 'Err') {
@@ -6226,7 +5850,7 @@ var $author$project$Main$view = function (_v0) {
 					[
 						$elm$html$Html$text(' \n                You and Pikachu finally made it! 🥇\n                '),
 						$elm$html$Html$text(
-						$elm$core$String$fromInt(1 - i))
+						$elm$core$String$fromInt(1 + i))
 					]))
 			]));
 };

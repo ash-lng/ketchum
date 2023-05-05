@@ -2,7 +2,7 @@ effect module Cool where { command = MyCmd } exposing (alert)
 
 import Basics
 import Task exposing (Task)
-import AshCoreMod.AshCoreModCool
+import Ash.Cool
 
 type alias State = ()
 
