@@ -1,10 +1,17 @@
-effect module Cool where { command = MyCmd, subscription = MySub } exposing (alert)
+effect module Cool where { command = MyCmd } exposing (alert)
 
-import AshCoreMod.Cool
+import Basics
+import Task exposing (Task)
+import Ash.Cool
 
-type MySub msg = NeverSub
-type MyCmd msg = NeverCmd
+type alias State = ()
 
-alert : String -> Cmd a
+init : Task Never State
+init =
+  Task.succeed ()
+
+type MyCmd = Alert String
+
+alert : String -> Cmd msg
 alert str =
-  Elm.Kernel.Cool.alert str
+  command (Alert str)
